@@ -40,10 +40,14 @@ const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = randInt(0, i + 1);
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+}
+
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
 }
 
 function between(value, min, max) {
@@ -121,11 +125,11 @@ function mark(x, y, grid, frontier, size) {
 
 function primsMaze(grid, size) {
     var frontier = [];
-    mark(Math.floor(Math.random()*(size - 1)), Math.floor(Math.random()*(size - 1)), grid, frontier, size);
+    mark(randInt(0, size - 1), randInt(0, size - 1), grid, frontier, size);
     
     while (frontier.length != 0) {
         var x, y
-        [x, y] = frontier.splice(Math.floor(Math.random()*(frontier.length - 1)), 1)[0];
+        [x, y] = frontier.splice(randInt(0, frontier.length - 1), 1)[0];
         var inNeighbours = [];
         directions.forEach(function(direction) {
             var nx, ny;
@@ -134,7 +138,7 @@ function primsMaze(grid, size) {
                 inNeighbours.push(direction);
             }
         });
-        var direction = inNeighbours[Math.floor(Math.random()*(inNeighbours.length - 1))];
+        var direction = inNeighbours[randInt(0, inNeighbours.length - 1)];
         var nx, ny;
         [nx, ny] = [x + direction[0], y + direction[1]];
         var index = directions.indexOf(direction);
