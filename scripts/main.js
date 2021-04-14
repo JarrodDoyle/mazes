@@ -1,58 +1,7 @@
-let canvas = document.getElementById('myCanvas');
-let ctx = canvas.getContext('2d');
-
-canvas.width = 800;
-canvas.height = 800;
-
-class Tree {
-    constructor() {
-        this.parent = null;
-    }
-
-    root() {
-        return (this.parent != null ? this.parent.root() : this);
-    }
-
-    connected(tree) {
-        return this.root() == tree.root();
-    }
-
-    connect(tree) {
-        tree.root().parent = this;
-    }
-}
-
-const mazeTypes = {
-    BACKTRACKER: "Recursive Backtracker",
-    ELLER: "Eller's",
-    KRUSKAL: "Kruskal's",
-    PRIM: "Prim's",
-    DIVISION: "Recursive Division",
-    ALDOUSBRODER: "Aldous-Broder",
-    WILSON: "Wilson's",
-    HUNTANDKILL: "Hunt-and-Kill",
-    GROWINGTREE: "Growing Tree",
-    BINARYTREE: "Binary Tree",
-    SIDEWINDER: "Sidewinder"
-}
-
-const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = randInt(0, i + 1);
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-function randInt(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
-}
-
-function between(value, min, max) {
-    return (value >= min) && (value < max);
-}
+import { mazeTypes } from "./utils.js";
+import { backtrackerMaze } from "./backtracker.js";
+import { kruskalsMaze } from "./kruskals.js";
+import { primsMaze } from "./prims.js";
 
 function generateMaze(type, size) {
     var grid = Array(size).fill(null).map(()=>Array(size).fill(0));
@@ -69,84 +18,6 @@ function generateMaze(type, size) {
     }
     // console.log(grid);
     drawMaze(grid);
-}
-
-function backtrackerMaze(cx, cy, grid, size) {
-    shuffleArray([...directions]).forEach(function(direction) {
-        var nx = cx + direction[0];
-        var ny = cy + direction[1];
-        
-        if (between(ny, 0, size) && between(nx, 0, size) && grid[ny][nx] == 0) {
-            var index = directions.indexOf(direction);
-            grid[cy][cx] |= 1 << index;
-            grid[ny][nx] |= 1 << ((index + 2) % 4);
-            backtrackerMaze(nx, ny, grid, size);
-        }
-    });
-}
-
-function kruskalsMaze(grid, size) {
-    var sets = Array(size).fill(null).map(()=>Array(size).fill(null).map(()=>new Tree()));
-    var edges = [];
-    for (var y = 0; y < size; y++) {
-        for (var x = 0; x < size; x++) {
-            if (y > 0) edges.push([x, y, directions[0]]);
-            if (x > 0) edges.push([x, y, directions[3]]);
-        }
-    }
-    shuffleArray(edges);
-
-    while (edges.length != 0) {
-        var x, y, direction, nx, ny, s1, s2;
-        [x, y, direction] = edges.pop();
-        [nx, ny] = [x + direction[0], y + direction[1]];
-        [s1, s2] = [sets[y][x], sets[ny][nx]];
-
-        if (!s1.connected(s2)) {
-            s1.connect(s2);
-            var index = directions.indexOf(direction);
-            grid[y][x] |= 1 << index;
-            grid[ny][nx] |= 1 << ((index + 2) % 4);
-        }
-    }
-}
-
-function mark(x, y, grid, frontier, size) {
-    grid[y][x] |= 0x1;
-    directions.forEach(function(direction) {
-        var nx, ny;
-        [nx, ny] = [x + direction[0], y + direction[1]];
-        if (between(nx, 0, size) && between(ny, 0, size) && grid[ny][nx] == 0) {
-            grid[ny][nx] |= 0x2;
-            frontier.push([nx, ny]);
-        }
-    });
-}
-
-function primsMaze(grid, size) {
-    var frontier = [];
-    mark(randInt(0, size - 1), randInt(0, size - 1), grid, frontier, size);
-    
-    while (frontier.length != 0) {
-        var x, y
-        [x, y] = frontier.splice(randInt(0, frontier.length - 1), 1)[0];
-        var inNeighbours = [];
-        directions.forEach(function(direction) {
-            var nx, ny;
-            [nx, ny] = [x + direction[0], y + direction[1]];
-            if (between(nx, 0, size) && between(ny, 0, size) && (grid[ny][nx] & 0x1) != 0) {
-                inNeighbours.push(direction);
-            }
-        });
-        var direction = inNeighbours[randInt(0, inNeighbours.length - 1)];
-        var nx, ny;
-        [nx, ny] = [x + direction[0], y + direction[1]];
-        var index = directions.indexOf(direction);
-        grid[y][x] |= 1 << index;
-        grid[ny][nx] |= 1 << ((index + 2) % 4);
-
-        mark(x, y, grid, frontier, size);
-    }
 }
 
 function drawMaze(grid) {
@@ -199,5 +70,11 @@ function init() {
         generateMaze(select.value, parseInt(sizeBox.value, 10));
     });
 }
+
+let canvas = document.getElementById('myCanvas');
+let ctx = canvas.getContext('2d');
+
+canvas.width = 800;
+canvas.height = 800;
 
 window.onload = init;
