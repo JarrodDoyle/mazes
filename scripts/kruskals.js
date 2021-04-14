@@ -18,8 +18,7 @@ class Tree {
     }
 }
 
-function kruskalsMaze(grid, size) {
-    var sets = Array(size).fill(null).map(()=>Array(size).fill(null).map(()=>new Tree()));
+function getEdges(size) {
     var edges = [];
     for (var y = 0; y < size; y++) {
         for (var x = 0; x < size; x++) {
@@ -28,6 +27,12 @@ function kruskalsMaze(grid, size) {
         }
     }
     shuffleArray(edges);
+    return edges;
+}
+
+function kruskalsMaze(grid, size) {
+    var sets = Array(size).fill(null).map(()=>Array(size).fill(null).map(()=>new Tree()));
+    var edges = getEdges(size);
 
     while (edges.length != 0) {
         var x, y, direction, nx, ny, s1, s2;
