@@ -1,9 +1,26 @@
 let canvas = document.getElementById('myCanvas');
 let ctx = canvas.getContext('2d');
 
-
 canvas.width = 800;
 canvas.height = 800;
+
+class Tree {
+    constructor() {
+        this.parent = null;
+    }
+
+    root() {
+        return (this.parent != null ? this.parent.root() : this);
+    }
+
+    connected(tree) {
+        return this.root() == tree.root();
+    }
+
+    connect(tree) {
+        tree.root().parent = this;
+    }
+}
 
 const mazeTypes = {
     BACKTRACKER: "Recursive Backtracker",
@@ -39,8 +56,10 @@ function generateMaze(type, size) {
         case mazeTypes.BACKTRACKER:
             backtrackerMaze(0, 0, grid);
             break;
+        case mazeTypes.KRUSKAL:
+            kruskalsMaze(grid);
     }
-    console.log(grid);
+    // console.log(grid);
     drawMaze(grid);
 }
 
@@ -56,6 +75,33 @@ function backtrackerMaze(cx, cy, grid) {
             backtrackerMaze(nx, ny, grid);
         }
     });
+}
+
+function kruskalsMaze(grid) {
+    var size = grid.length;
+    var sets = Array(size).fill(null).map(()=>Array(size).fill(null).map(()=>new Tree()));
+    var edges = [];
+    for (var y = 0; y < size; y++) {
+        for (var x = 0; x < size; x++) {
+            if (y > 0) edges.push([x, y, directions[0]]);
+            if (x > 0) edges.push([x, y, directions[3]]);
+        }
+    }
+    shuffleArray(edges);
+
+    while (edges.length != 0) {
+        var x, y, direction, nx, ny, s1, s2;
+        [x, y, direction] = edges.pop();
+        [nx, ny] = [x + direction[0], y + direction[1]];
+        [s1, s2] = [sets[y][x], sets[ny][nx]];
+
+        if (!s1.connected(s2)) {
+            s1.connect(s2);
+            var index = directions.indexOf(direction);
+            grid[y][x] |= 1 << index;
+            grid[ny][nx] |= 1 << ((index + 2) % 4);
+        }
+    }
 }
 
 function drawMaze(grid) {
