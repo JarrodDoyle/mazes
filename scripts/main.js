@@ -54,31 +54,34 @@ function generateMaze(type, size) {
     var grid = Array(size).fill(null).map(()=>Array(size).fill(0));
     switch (type) {
         case mazeTypes.BACKTRACKER:
-            backtrackerMaze(0, 0, grid);
+            backtrackerMaze(0, 0, grid, size);
             break;
         case mazeTypes.KRUSKAL:
-            kruskalsMaze(grid);
+            kruskalsMaze(grid, size);
+            break;
+        case mazeTypes.PRIM:
+            primsMaze(grid, size);
+            break
     }
     // console.log(grid);
     drawMaze(grid);
 }
 
-function backtrackerMaze(cx, cy, grid) {
+function backtrackerMaze(cx, cy, grid, size) {
     shuffleArray([...directions]).forEach(function(direction) {
         var nx = cx + direction[0];
         var ny = cy + direction[1];
         
-        if (between(ny, 0, grid.length) && between(nx, 0, grid[ny].length) && grid[ny][nx] == 0) {
+        if (between(ny, 0, size) && between(nx, 0, size) && grid[ny][nx] == 0) {
             var index = directions.indexOf(direction);
             grid[cy][cx] |= 1 << index;
             grid[ny][nx] |= 1 << ((index + 2) % 4);
-            backtrackerMaze(nx, ny, grid);
+            backtrackerMaze(nx, ny, grid, size);
         }
     });
 }
 
-function kruskalsMaze(grid) {
-    var size = grid.length;
+function kruskalsMaze(grid, size) {
     var sets = Array(size).fill(null).map(()=>Array(size).fill(null).map(()=>new Tree()));
     var edges = [];
     for (var y = 0; y < size; y++) {
@@ -101,6 +104,44 @@ function kruskalsMaze(grid) {
             grid[y][x] |= 1 << index;
             grid[ny][nx] |= 1 << ((index + 2) % 4);
         }
+    }
+}
+
+function mark(x, y, grid, frontier, size) {
+    grid[y][x] |= 0x1;
+    directions.forEach(function(direction) {
+        var nx, ny;
+        [nx, ny] = [x + direction[0], y + direction[1]];
+        if (between(nx, 0, size) && between(ny, 0, size) && grid[ny][nx] == 0) {
+            grid[ny][nx] |= 0x2;
+            frontier.push([nx, ny]);
+        }
+    });
+}
+
+function primsMaze(grid, size) {
+    var frontier = [];
+    mark(Math.floor(Math.random()*(size - 1)), Math.floor(Math.random()*(size - 1)), grid, frontier, size);
+    
+    while (frontier.length != 0) {
+        var x, y
+        [x, y] = frontier.splice(Math.floor(Math.random()*(frontier.length - 1)), 1)[0];
+        var inNeighbours = [];
+        directions.forEach(function(direction) {
+            var nx, ny;
+            [nx, ny] = [x + direction[0], y + direction[1]];
+            if (between(nx, 0, size) && between(ny, 0, size) && (grid[ny][nx] & 0x1) != 0) {
+                inNeighbours.push(direction);
+            }
+        });
+        var direction = inNeighbours[Math.floor(Math.random()*(inNeighbours.length - 1))];
+        var nx, ny;
+        [nx, ny] = [x + direction[0], y + direction[1]];
+        var index = directions.indexOf(direction);
+        grid[y][x] |= 1 << index;
+        grid[ny][nx] |= 1 << ((index + 2) % 4);
+
+        mark(x, y, grid, frontier, size);
     }
 }
 
