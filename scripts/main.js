@@ -2,6 +2,7 @@ import { mazeTypes } from "./utils.js";
 import { backtrackerMaze } from "./backtracker.js";
 import { kruskalsMaze } from "./kruskals.js";
 import { primsMaze } from "./prims.js";
+import { solveAStar } from "./astar.js";
 
 function generateMaze(type, size) {
     var grid = Array(size).fill(null).map(()=>Array(size).fill(0));
@@ -16,8 +17,8 @@ function generateMaze(type, size) {
             primsMaze(grid, size);
             break
     }
-    // console.log(grid);
     drawMaze(grid);
+    return grid;
 }
 
 function drawMaze(grid) {
@@ -49,9 +50,23 @@ function drawMaze(grid) {
                 ctx.lineTo(cellX, cellY + cellHeight);
             }
 
+            ctx.strokeStyle = "black";
             ctx.stroke();
         }
     }
+}
+
+function drawSolution(path, size) {
+    var cWidth = canvas.width / size;
+    var cHeight = canvas.height / size;
+    
+    ctx.beginPath();
+    ctx.moveTo(path[0][0] * cWidth + cWidth / 2, path[0][1] * cHeight + cHeight / 2);
+    for (var i=1; i<path.length; i++) {
+        ctx.lineTo(path[i][0] * cWidth + cWidth / 2, path[i][1] * cHeight + cHeight / 2);
+    }
+    ctx.strokeStyle = "#ff0000";
+    ctx.stroke();
 }
 
 function init() {
@@ -65,10 +80,22 @@ function init() {
     var sizeBox = document.getElementById("mazeSize");
     sizeBox.value = 10;
 
-    var btn = document.getElementById("generateMaze");
-    btn.addEventListener("click", () => {
-        generateMaze(select.value, parseInt(sizeBox.value, 10));
+    var genBtn = document.getElementById("generateMaze");
+    genBtn.addEventListener("click", () => {
+        mazeGrid = generateMaze(select.value, parseInt(sizeBox.value, 10));
+        solved = false;
     });
+
+    var solveBtn = document.getElementById("solveMaze");
+    solveBtn.addEventListener("click", () => {
+        if (!solved) {
+            var path = solveAStar(mazeGrid, [0, 0], [sizeBox.value - 1, sizeBox.value - 1]);
+            drawSolution(path, sizeBox.value);
+            solved = true;
+        }
+    });
+
+    mazeGrid = generateMaze(select.value, parseInt(sizeBox.value, 10));
 }
 
 let canvas = document.getElementById('myCanvas');
@@ -76,5 +103,8 @@ let ctx = canvas.getContext('2d');
 
 canvas.width = 800;
 canvas.height = 800;
+
+var mazeGrid;
+var solved = false;
 
 window.onload = init;
