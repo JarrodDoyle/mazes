@@ -32,6 +32,7 @@ function drawMaze(grid) {
             var cellY = y * cellHeight;
             var cell = grid[y][x];
 
+            // Draw top/right/bottom/left edges of a cell if appropriate
             ctx.beginPath();
             if ((cell & 0x1) == 0) {
                 ctx.moveTo(cellX, cellY);
@@ -60,6 +61,7 @@ function drawSolution(path, size) {
     var cWidth = canvas.width / size;
     var cHeight = canvas.height / size;
     
+    // Iterate over the path moving from cell center to cell center
     ctx.beginPath();
     ctx.moveTo(path[0][0] * cWidth + cWidth / 2, path[0][1] * cHeight + cHeight / 2);
     for (var i=1; i<path.length; i++) {
@@ -70,6 +72,7 @@ function drawSolution(path, size) {
 }
 
 function init() {
+    // Build the options for the select component
     var select = document.getElementById("mazeTypes");
     for (var item in mazeTypes) {
         var option = document.createElement("option");
@@ -88,6 +91,7 @@ function init() {
 
     var solveBtn = document.getElementById("solveMaze");
     solveBtn.addEventListener("click", () => {
+        // Don't bother recomputing a path if it's already been calculated for this maze
         if (!solved) {
             var path = solveAStar(mazeGrid, [0, 0], [sizeBox.value - 1, sizeBox.value - 1]);
             drawSolution(path, sizeBox.value);

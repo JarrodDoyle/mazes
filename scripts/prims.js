@@ -13,6 +13,7 @@ function mark(x, y, grid, frontier, size) {
 }
 
 function getInNeighbours(x, y, grid, size) {
+
     var inNeighbours = [];
     directions.forEach(function(direction) {
         var nx, ny;
